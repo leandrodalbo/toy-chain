@@ -7,25 +7,13 @@ module.exports = class Blockchain {
     this.chain = [
       {
         index: 0,
-        timestamp: Date.now(),
-        transactions: [],
+        transactionsHash: "",
         hash: this.getSeed(),
       },
     ];
 
     this.proofOfWork = proofOfWork;
     this.transactionsLimit = transactionsLimit;
-  }
-
-  saveBlock(hash, transactions) {
-    const block = {
-      index: this.chain.length,
-      timestamp: Date.now(),
-      transactions: transactions,
-      hash: hash,
-    };
-
-    this.chain.push(block);
   }
 
   getLastBlock() {
@@ -42,19 +30,34 @@ module.exports = class Blockchain {
     return sha256(seed + "default");
   }
 
-  async hashWithTransactions(transactions) {
-    const data = {
-      index: this.chain.length,
-      timestamp: Date.now(),
-      transactions: transactions,
-      previousBlockHash: this.getLastBlock()["hash"],
-    };
+  async blockHash(transactions) {
+    const transactionsHash = await this.transactionsHash(transactions);
+    const data =
+      `${this.chain.length + 1}` +
+      this.getLastBlock()["hash"] +
+      transactionsHash;
 
     let nonce = 0;
-    let hash = sha256(JSON.stringify(data) + nonce);
+    let hash = sha256(data + nonce);
 
     while (!this.isValidHash(hash)) {
-      hash = sha256(JSON.stringify(data) + nonce);
+      hash = sha256(data + nonce);
+      nonce++;
+    }
+
+    return hash;
+  }
+
+  async transactionsHash(transactions) {
+    const data = transactions
+      .map((t) => t.id + t.sender + t.recipient + t.amount)
+      .join();
+
+    let nonce = 0;
+    let hash = sha256(data + nonce);
+
+    while (!this.isValidHash(hash)) {
+      hash = sha256(data + nonce);
       nonce++;
     }
 
