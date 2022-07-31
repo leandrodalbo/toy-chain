@@ -4,6 +4,7 @@ const uuid = require("uuid");
 const axios = require("axios").default;
 const CronJob = require("cron").CronJob;
 const Blockchain = require("./blockchain");
+const e = require("express");
 
 const app = express();
 const port = process.argv[2];
@@ -31,6 +32,12 @@ app.get("/lasthash", (req, res) =>
 );
 
 app.get("/gettingreward", (req, res) => res.status(200).send(nextReward.pop()));
+
+app.get("/consensus", (req, res) =>
+  res
+    .status(200)
+    .send({ pendingTransactions: transactionsQueue, chain: flagelochain.chain })
+);
 
 app.post("/minedblock", async (req, res) => {
   const { block, gettingReward } = req.body;
@@ -163,6 +170,8 @@ const getReward = async (blockHash) => {
       )
       .then(console.log(`new_reward_for_miner-${minerAddress}`))
       .catch((e) => console.log("broadcast_reward_transaction_error"));
+  } else {
+    await getConsensus();
   }
 };
 
@@ -190,6 +199,29 @@ const spreadBlock = async (blockHash, transactionsHash) => {
   await Promise.all(
     neighbours.map((n) => axios.post(`${n.address}/minedblock`, minedblockpost))
   );
+};
+
+const getConsensus = async () => {
+  const responses = await Promise.all(
+    neighbours.map((n) => axios.get(`${n.address}/consensus`))
+  );
+
+  transactionsQueue.splice(0, transactionsQueue.length);
+  flagelochain.chain.splice(0, flagelochain.chain.length);
+
+  let longestValid = responses[0];
+
+  for (let i = 1; i < responses.length; i++) {
+    if (responses[i].data.chain.length > longestValid.data.chain.length) {
+      longestValid = responses[i];
+    }
+  }
+
+  flagelochain.chain = longestValid.data.chain;
+
+  longestValid.data.pendingTransactions.forEach((t) => {
+    transactionsQueue.push(t);
+  });
 };
 
 new CronJob("0 */1 * * * *", () => mine(), null, true);
