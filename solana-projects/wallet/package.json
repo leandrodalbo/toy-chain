@@ -1,0 +1,15 @@
+{
+  "name": "solana-projects",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "keywords": [],
+  "author": "MR. LDB",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.50.1"
+  }
+}
