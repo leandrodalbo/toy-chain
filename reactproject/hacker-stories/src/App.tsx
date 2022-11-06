@@ -1,7 +1,9 @@
 import { useState } from "react";
+import EvenOddList from "./components/EvenOddList";
+import InputsComponents from "./components/InputComponents";
 import HistoryObject from "./model-objects/HistoryObject";
 
-function App() {
+const App = () => {
   const [value, setValue] = useState(0);
   const [history, setHistory] = useState(Array<HistoryObject>);
 
@@ -22,18 +24,12 @@ function App() {
     <div>
       <h1>HACKER STORY</h1>
 
-      <label htmlFor="evenOrOdd">Even Or Odd: </label>
-      <input id="evenOrOdd" type="number" onChange={onChangeHandler} />
-
-      <ul>
-        {history.map((it) => (
-          <h1 key={it.id}>
-            <span>{it.value}</span>:<span>{it.result}</span>
-          </h1>
-        ))}
-      </ul>
+      <hr />
+      <InputsComponents onChangeHandler={onChangeHandler} />
+      <hr />
+      <EvenOddList values={history} />
     </div>
   );
-}
+};
 
 export default App;
