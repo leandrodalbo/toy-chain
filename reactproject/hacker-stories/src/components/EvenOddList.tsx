@@ -10,12 +10,11 @@ const EvenOddList = (props: any) => {
   };
 
   const filterHistoryItem = (item: HistoryObject) => {
-    let filteredByValue
+    let filteredByValue;
     if (!filterValue) {
       filteredByValue = true;
-    }else
-    {
-      filteredByValue = item.value == filterValue
+    } else {
+      filteredByValue = item.value == filterValue;
     }
 
     return filteredByValue;
