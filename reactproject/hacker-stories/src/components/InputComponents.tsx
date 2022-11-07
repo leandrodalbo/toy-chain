@@ -1,4 +1,4 @@
-const InputsComponents = (props) => {
+const InputsComponents = (props:any) => {
   const { onChangeHandler } = props;
   return (
     <div>
