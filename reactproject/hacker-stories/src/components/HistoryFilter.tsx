@@ -1,10 +1,20 @@
-const HistoryFilter = (props: any) => {
-  const { onFilterChange } = props;
+interface HistoryFilterProps {
+  onFilterChange: (event: any) => void;
+  inputFilterValue: number | undefined;
+}
+
+const HistoryFilter = (props: HistoryFilterProps) => {
+  const { onFilterChange, inputFilterValue } = props;
   return (
     <div>
       <label htmlFor="valueFilter">ValueFilter: </label>
       <span>
-        <input id="valueFilter" type="number" onChange={onFilterChange} />
+        <input
+          id="valueFilter"
+          value={inputFilterValue}
+          type="number"
+          onChange={onFilterChange}
+        />
       </span>
     </div>
   );

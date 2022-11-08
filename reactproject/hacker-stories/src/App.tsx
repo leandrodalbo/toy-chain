@@ -25,7 +25,7 @@ const App = () => {
       <h1>HACKER STORY</h1>
 
       <hr />
-      <InputsComponents onChangeHandler={onChangeHandler} />
+      <InputsComponents inputValue={value} onChangeHandler={onChangeHandler} />
       <hr />
       <EvenOddList values={history} />
     </div>

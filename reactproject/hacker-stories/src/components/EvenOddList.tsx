@@ -23,7 +23,7 @@ const EvenOddList = (props: any) => {
   const values: Array<HistoryObject> = props.values;
   return (
     <div>
-      <HistoryFilter onFilterChange={onFilterChange} />
+      <HistoryFilter inputFilterValue={filterValue} onFilterChange={onFilterChange} />
       <ul>
         {values
           .filter((it) => filterHistoryItem(it))
