@@ -11,7 +11,7 @@ const App = () => {
     setValue(event.target.value);
     const historyValue: HistoryObject = {
       id: history.length + 1,
-      result: event.target.value % 2 == 0 ? "is even" : "is Odd",
+      result: event.target.value % 2 == 0 ? "is_even" : "is_odd",
       value: event.target.value,
     };
 
@@ -26,7 +26,6 @@ const App = () => {
 
       <hr />
       <InputsComponents inputValue={value} onChangeHandler={onChangeHandler} />
-      <hr />
       <EvenOddList values={history} />
     </div>
   );

@@ -1,35 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HistoryObject from "../model-objects/HistoryObject";
 import HistoryFilter from "./HistoryFilter";
 
-const EvenOddList = (props: any) => {
-  const [filterValue, setFilterValue] = useState(undefined);
+interface EvenOddListProps {
+  values: Array<HistoryObject>;
+}
 
-  const onFilterChange = (event: any) => {
-    setFilterValue(event.target.value);
+const EvenOddList = (props: EvenOddListProps) => {
+  const { values } = props;
+
+  const [valueFilter, setValueFilter] = useState(0);
+  const [otherFilter, setOtherFilter] = useState("none");
+
+  const onValueFilterChange = (event: any) => {
+    setValueFilter(event.target.value);
   };
+
+  const onOtherFilterChange = (event: any) => {
+    setOtherFilter(event.target.value);
+  };
+
+  useEffect(() => {
+    setValueFilter(0);
+    setOtherFilter("none");
+  }, [values]);
 
   const filterHistoryItem = (item: HistoryObject) => {
-    let filteredByValue;
-    if (!filterValue) {
-      filteredByValue = true;
-    } else {
-      filteredByValue = item.value == filterValue;
-    }
+    const filteredByValue =
+      (valueFilter && item.value === valueFilter) || !valueFilter;
 
-    return filteredByValue;
+    const filterByOthers = item.result.includes(otherFilter);
+
+    return (
+      (filteredByValue && otherFilter === "none") ||
+      (!valueFilter && filterByOthers)
+    );
   };
 
-  const values: Array<HistoryObject> = props.values;
   return (
     <div>
-      <HistoryFilter inputFilterValue={filterValue} onFilterChange={onFilterChange} />
+      <HistoryFilter
+        inputFilterValue={valueFilter}
+        onFilterChange={onValueFilterChange}
+        otherFilter={otherFilter}
+        onOtherFilterChange={onOtherFilterChange}
+      />
       <ul>
         {values
           .filter((it) => filterHistoryItem(it))
           .map((it) => (
             <h1 key={it.id}>
-              <span>{it.value}</span>:<span>{it.result}</span>
+              <span>{it.value}</span>_<span>{it.result}</span>
             </h1>
           ))}
       </ul>
