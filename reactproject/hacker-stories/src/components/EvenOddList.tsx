@@ -4,11 +4,10 @@ import HistoryFilter from "./HistoryFilter";
 
 interface EvenOddListProps {
   values: Array<HistoryObject>;
+  valueRemover: (id: number) => void;
 }
 
-const EvenOddList = (props: EvenOddListProps) => {
-  const { values } = props;
-
+const EvenOddList = ({ values, valueRemover }: EvenOddListProps) => {
   const [valueFilter, setValueFilter] = useState(0);
   const [otherFilter, setOtherFilter] = useState("none");
 
@@ -45,15 +44,31 @@ const EvenOddList = (props: EvenOddListProps) => {
         otherFilter={otherFilter}
         onOtherFilterChange={onOtherFilterChange}
       />
-      <ul>
-        {values
-          .filter((it) => filterHistoryItem(it))
-          .map((it) => (
-            <h1 key={it.id}>
-              <span>{it.value}</span>_<span>{it.result}</span>
-            </h1>
-          ))}
-      </ul>
+      <hr />
+      <table style={{ textAlign: "center" }}>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>VALUE</th>
+            <th>RESULT</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {values
+            .filter((it) => filterHistoryItem(it))
+            .map((it) => (
+              <tr>
+                <td>{it.id}</td>
+                <td>{it.value}</td>
+                <td>{it.result}</td>
+                <td>
+                  <button onClick={() => valueRemover(it.id)}>delete</button>
+                </td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
     </div>
   );
 };
