@@ -1,13 +1,13 @@
-package com.javachain;
+package com.toychain.toychain;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PlainjavablockchainApplication {
+public class ToychainApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PlainjavablockchainApplication.class, args);
+		SpringApplication.run(ToychainApplication.class, args);
 	}
 
 }

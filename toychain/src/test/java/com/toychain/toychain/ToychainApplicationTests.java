@@ -1,10 +1,10 @@
-package com.javachain;
+package com.toychain.toychain;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PlainjavablockchainApplicationTests {
+class ToychainApplicationTests {
 
 	@Test
 	void contextLoads() {
