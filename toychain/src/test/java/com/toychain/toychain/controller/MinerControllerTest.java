@@ -1,8 +1,10 @@
 package com.toychain.toychain.controller;
 
 
+import com.toychain.toychain.exceptions.InvalidTransactionException;
 import com.toychain.toychain.exceptions.SeedingFailedException;
 import com.toychain.toychain.model.Block;
+import com.toychain.toychain.model.Transaction;
 import com.toychain.toychain.service.MinerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,10 +20,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureJsonTesters
@@ -70,4 +75,47 @@ public class MinerControllerTest {
 
     }
 
+    @Test
+    public void willGetThePendingTransactions() throws Exception {
+        given(minerService.pendingTransactions()).willReturn(List.of(new Transaction()));
+
+        MockHttpServletResponse res = mvc.perform(get("/pendingTransactions").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    public void shouldAddANewTransaction() throws Exception {
+        Transaction transaction = new Transaction();
+
+        given(minerService.addTransaction(any())).
+                willReturn(transaction);
+
+        MockHttpServletResponse res = mvc.perform(
+                        post("/addTransaction").contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonData.write(transaction).getJson()))
+                .andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+        then(res.getContentAsString()).isEqualTo(jsonData.write(transaction).getJson());
+
+    }
+
+
+    @Test
+    public void shouldGetABadRequestIfTheServiceFails() throws Exception {
+
+        given(minerService.addTransaction(any())).
+                willThrow(InvalidTransactionException.class);
+
+        MockHttpServletResponse res = mvc.perform(
+                        post("/addTransaction").contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonData.write(new Transaction()).getJson()))
+                .andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+
+
+    }
 }
