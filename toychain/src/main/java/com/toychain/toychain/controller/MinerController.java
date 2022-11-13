@@ -1,5 +1,6 @@
 package com.toychain.toychain.controller;
 
+import com.toychain.toychain.exceptions.BlockGenerationException;
 import com.toychain.toychain.exceptions.InvalidTransactionException;
 import com.toychain.toychain.exceptions.SeedingFailedException;
 import com.toychain.toychain.model.Block;
@@ -38,4 +39,20 @@ public class MinerController {
     public Transaction addTransaction(@RequestBody Transaction transaction) throws InvalidTransactionException {
         return minerService.addTransaction(transaction);
     }
+
+    @GetMapping("/allBlocks")
+    public List<Block> allBlocks() {
+        return minerService.allBlocks();
+    }
+
+    @GetMapping("/allSavedTransactions")
+    public List<Transaction> allTransactions() {
+        return minerService.allSavedTransactions();
+    }
+
+    @GetMapping("/kickMining")
+    public Block mineNewBlock() throws BlockGenerationException {
+        return minerService.generateBlock();
+    }
+
 }

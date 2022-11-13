@@ -12,6 +12,4 @@ import org.springframework.context.annotation.Configuration;
 public class Props {
 
     private int nonce;
-
-    private int transactions;
 }

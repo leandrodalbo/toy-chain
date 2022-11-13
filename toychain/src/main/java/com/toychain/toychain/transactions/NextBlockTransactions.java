@@ -12,6 +12,10 @@ public class NextBlockTransactions {
 
     private final List<Transaction> transactions = new ArrayList<Transaction>();
 
+    public void removeAllPendingTransactions() {
+        this.transactions.clear();
+    }
+
     public void addTransaction(Transaction transaction) {
         transactions.add(transaction);
     }

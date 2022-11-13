@@ -1,6 +1,7 @@
 package com.toychain.toychain.controller;
 
 
+import com.toychain.toychain.exceptions.BlockGenerationException;
 import com.toychain.toychain.exceptions.InvalidTransactionException;
 import com.toychain.toychain.exceptions.SeedingFailedException;
 import com.toychain.toychain.model.Block;
@@ -116,6 +117,47 @@ public class MinerControllerTest {
 
         then(res.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
+
+    }
+
+    @Test
+    public void willGetAllTheBlocks() throws Exception {
+        given(minerService.allBlocks()).willReturn(List.of(new Block()));
+
+        MockHttpServletResponse res = mvc.perform(get("/allBlocks").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+
+    @Test
+    public void willGetAllTheSavedTransactions() throws Exception {
+        given(minerService.allSavedTransactions()).willReturn(List.of(new Transaction()));
+
+        MockHttpServletResponse res = mvc.perform(get("/allSavedTransactions").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    public void willMineANewBlock() throws Exception {
+        given(minerService.generateBlock()).willReturn(new Block());
+
+        MockHttpServletResponse res = mvc.perform(get("/kickMining").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    public void willThrowExceptionDuringTheNewBlockGeneration() throws Exception {
+        given(minerService.generateBlock()).willThrow(BlockGenerationException.class);
+
+        MockHttpServletResponse res = mvc.perform(get("/kickMining").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
     }
 }

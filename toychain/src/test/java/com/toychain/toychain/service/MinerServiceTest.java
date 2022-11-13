@@ -1,5 +1,6 @@
 package com.toychain.toychain.service;
 
+import com.toychain.toychain.exceptions.BlockGenerationException;
 import com.toychain.toychain.exceptions.InvalidTransactionException;
 import com.toychain.toychain.exceptions.SeedingFailedException;
 import com.toychain.toychain.hashing.HashingComponent;
@@ -7,6 +8,7 @@ import com.toychain.toychain.model.Block;
 import com.toychain.toychain.model.Transaction;
 import com.toychain.toychain.props.Props;
 import com.toychain.toychain.repositories.BlocksRepository;
+import com.toychain.toychain.repositories.TransactionsRepository;
 import com.toychain.toychain.transactions.NextBlockTransactions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,21 +16,28 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.*;
-
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 public class MinerServiceTest {
 
     @Mock
-    private BlocksRepository repository;
+    private BlocksRepository blocksRepository;
 
+    @Mock
+    private TransactionsRepository transactionsRepository;
     @Mock
     private Props props;
 
@@ -39,55 +48,55 @@ public class MinerServiceTest {
     private NextBlockTransactions nextBlockTransactions;
 
     @InjectMocks
-    private MinerService service;
+    private MinerService minerService;
 
     @Test
     public void willGetTheLatestBlock() {
 
-        when(repository.latestBlock()).thenReturn(new Block("ABC111", "CBA321", new Date()));
+        when(blocksRepository.latestBlock()).thenReturn(new Block("ABC111", "CBA321", new Date()));
 
 
-        Block latestBlock = service.getLastBlock();
+        Block latestBlock = minerService.getLastBlock();
 
         assertThat(latestBlock).isNotNull();
-        verify(repository, times(1)).latestBlock();
+        verify(blocksRepository, times(1)).latestBlock();
 
     }
 
     @Test
     public void willStartANewChain() throws SeedingFailedException {
 
-        when(repository.latestBlock()).thenReturn(null);
-        when(repository.save(any())).thenReturn(new Block());
+        when(blocksRepository.latestBlock()).thenReturn(null);
+        when(blocksRepository.save(any())).thenReturn(new Block());
         when(props.getNonce()).thenReturn(2);
         when(hashingComponent.generateHash(anyString())).thenReturn(Optional.of("arywruweu"));
 
-        Block seedBlock = service.seedChain();
+        Block seedBlock = minerService.seedChain();
 
         assertThat(seedBlock).isNotNull();
-        verify(repository, times(1)).latestBlock();
-        verify(repository, times(1)).save(any());
+        verify(blocksRepository, times(1)).latestBlock();
+        verify(blocksRepository, times(1)).save(any());
 
     }
 
     @Test
-    public void willNotStartANewChainIfABlockExists() throws SeedingFailedException {
+    public void willNotStartANewChainIfABlockExists() {
 
-        when(repository.latestBlock()).thenReturn(new Block());
+        when(blocksRepository.latestBlock()).thenReturn(new Block());
         when(props.getNonce()).thenReturn(2);
         when(hashingComponent.generateHash(anyString())).thenReturn(Optional.of("arywruweu"));
 
 
-        assertThatThrownBy(() -> service.seedChain()).isInstanceOf(SeedingFailedException.class);
+        assertThatThrownBy(() -> minerService.seedChain()).isInstanceOf(SeedingFailedException.class);
 
 
-        verify(repository, times(1)).latestBlock();
-        verify(repository, times(0)).save(any());
+        verify(blocksRepository, times(1)).latestBlock();
+        verify(blocksRepository, times(0)).save(any());
 
     }
 
     @Test
-    public void willKeepANewTransactionUntilANewBlockIsMined() throws SeedingFailedException, InvalidTransactionException {
+    public void willKeepANewTransactionUntilANewBlockIsMined() throws InvalidTransactionException {
 
         doNothing().when(nextBlockTransactions).addTransaction(any());
         when(hashingComponent.generateHash(anyString())).thenReturn(Optional.of("arywruweu"));
@@ -97,7 +106,7 @@ public class MinerServiceTest {
         t.setSender("aag0F0AFA4");
         t.setReceiver("SFG45ADF4SA");
 
-        Transaction result = service.addTransaction(t);
+        Transaction result = minerService.addTransaction(t);
 
 
         assertThat(result.getHash()).isNotNull();
@@ -106,12 +115,12 @@ public class MinerServiceTest {
     }
 
     @Test
-    public void willReturnThePendingTransactions() throws SeedingFailedException, InvalidTransactionException {
+    public void willReturnThePendingTransactions() {
 
         when(nextBlockTransactions.allTransactions()).thenReturn(List.of(new Transaction()));
 
 
-        List<Transaction> result = service.pendingTransactions();
+        List<Transaction> result = minerService.pendingTransactions();
 
 
         assertThat(result).isNotNull();
@@ -122,16 +131,16 @@ public class MinerServiceTest {
 
 
     @Test
-    public void ExceptionIsThrownWhenATransactionIsNull() throws SeedingFailedException, InvalidTransactionException {
+    public void ExceptionIsThrownWhenATransactionIsNull() {
 
-        assertThatThrownBy(() -> service.addTransaction(null)).isInstanceOf(InvalidTransactionException.class);
+        assertThatThrownBy(() -> minerService.addTransaction(null)).isInstanceOf(InvalidTransactionException.class);
 
 
         verify(nextBlockTransactions, times(0)).addTransaction(any());
     }
 
     @Test
-    public void ExceptionIsThrownWhenTheHashGenerationFailed() throws SeedingFailedException, InvalidTransactionException {
+    public void ExceptionIsThrownWhenTheHashGenerationFailed() {
 
 
         when(hashingComponent.generateHash(anyString())).thenReturn(Optional.empty());
@@ -141,7 +150,7 @@ public class MinerServiceTest {
         t.setSender("aag0F0AFA4");
         t.setReceiver("SFG45ADF4SA");
 
-        assertThatThrownBy(() -> service.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
+        assertThatThrownBy(() -> minerService.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
 
         verify(hashingComponent, times(1)).generateHash(any());
         verify(nextBlockTransactions, times(0)).addTransaction(any());
@@ -149,14 +158,14 @@ public class MinerServiceTest {
 
 
     @Test
-    public void ExceptionIsThrownWithoutASender() throws SeedingFailedException, InvalidTransactionException {
+    public void ExceptionIsThrownWithoutASender() {
 
         Transaction t = new Transaction();
         t.setAmount(5.0);
         t.setSender("");
         t.setReceiver("SFG45ADF4SA");
 
-        assertThatThrownBy(() -> service.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
+        assertThatThrownBy(() -> minerService.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
 
         verify(hashingComponent, times(0)).generateHash(any());
         verify(nextBlockTransactions, times(0)).addTransaction(any());
@@ -164,32 +173,114 @@ public class MinerServiceTest {
 
 
     @Test
-    public void ExceptionIsThrownWithoutAReceiver() throws SeedingFailedException, InvalidTransactionException {
+    public void ExceptionIsThrownWithoutAReceiver() {
 
         Transaction t = new Transaction();
         t.setAmount(5.0);
         t.setSender("AAA333FFF333");
         t.setReceiver("");
 
-        assertThatThrownBy(() -> service.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
+        assertThatThrownBy(() -> minerService.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
 
         verify(hashingComponent, times(0)).generateHash(any());
         verify(nextBlockTransactions, times(0)).addTransaction(any());
     }
 
     @Test
-    public void ExceptionIsThrownWithoutAValidAmount() throws SeedingFailedException, InvalidTransactionException {
+    public void ExceptionIsThrownWithoutAValidAmount() {
 
         Transaction t = new Transaction();
         t.setAmount(null);
         t.setSender("AAA333FFF333");
         t.setReceiver("aa33bgb333");
 
-        assertThatThrownBy(() -> service.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
+        assertThatThrownBy(() -> minerService.addTransaction(t)).isInstanceOf(InvalidTransactionException.class);
 
         verify(hashingComponent, times(0)).generateHash(any());
         verify(nextBlockTransactions, times(0)).addTransaction(any());
     }
 
+
+    @Test
+    public void blockMiningFailsWithoutTransactions() {
+
+        when(nextBlockTransactions.allTransactions()).thenReturn(new ArrayList<>());
+
+        assertThatThrownBy(() -> minerService.generateBlock()).isInstanceOf(BlockGenerationException.class);
+
+        verify(blocksRepository, times(0)).save(any());
+        verify(hashingComponent, times(0)).generateHash(any());
+        verify(nextBlockTransactions, times(1)).allTransactions();
+
+    }
+
+    @Test
+    public void blockMiningFailsWithoutASeed() {
+        Transaction transaction = new Transaction();
+        transaction.setHash("abd3323");
+        when(blocksRepository.latestBlock()).thenReturn(null);
+        when(nextBlockTransactions.allTransactions()).thenReturn(List.of(transaction));
+
+        assertThatThrownBy(() -> minerService.generateBlock()).isInstanceOf(BlockGenerationException.class);
+
+        verify(hashingComponent, times(0)).generateHash(any());
+        verify(nextBlockTransactions, times(1)).allTransactions();
+        verify(blocksRepository, times(1)).latestBlock();
+        verify(blocksRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void blockMiningIsSuccessful() throws BlockGenerationException {
+        Transaction transaction = new Transaction();
+        transaction.setHash("abd3323");
+
+        Block seedBlock = new Block();
+        seedBlock.setHash("0000aaa23bbb2");
+
+        when(transactionsRepository.saveAll(any())).thenReturn(new ArrayList<>());
+        when(blocksRepository.save(any())).thenReturn(new Block());
+        when(blocksRepository.latestBlock()).thenReturn(seedBlock);
+        when(nextBlockTransactions.allTransactions()).thenReturn(List.of(transaction));
+        doNothing().when(nextBlockTransactions).removeAllPendingTransactions();
+        when(hashingComponent.generateHash(anyString())).thenReturn(Optional.of("0000bbb33ddd333"));
+
+        Block newBlock = minerService.generateBlock();
+
+        assertThat(newBlock).isNotNull();
+
+
+        verify(transactionsRepository, times(1)).saveAll(any());
+        verify(hashingComponent, times(1)).generateHash(any());
+        verify(nextBlockTransactions, times(1)).allTransactions();
+        verify(nextBlockTransactions, times(1)).removeAllPendingTransactions();
+        verify(blocksRepository, times(1)).latestBlock();
+        verify(blocksRepository, times(1)).save(any());
+    }
+
+
+    @Test
+    public void willReturnAllTheBlocks() {
+
+        when(blocksRepository.findAll()).thenReturn(List.of(new Block()));
+
+        List<Block> allBlocks = minerService.allBlocks();
+
+        assertThat(allBlocks.size()).isGreaterThan(0);
+
+        verify(blocksRepository, times(1)).findAll();
+    }
+
+
+    @Test
+    public void willReturnAllTheSavedTransactions() {
+
+        when(transactionsRepository.findAll()).thenReturn(List.of(new Transaction()));
+
+        List<Transaction> allSavedTransactions = minerService.allSavedTransactions();
+
+        assertThat(allSavedTransactions.size()).isGreaterThan(0);
+
+        verify(transactionsRepository, times(1)).findAll();
+    }
 
 }
