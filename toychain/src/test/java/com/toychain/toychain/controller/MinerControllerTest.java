@@ -1,6 +1,7 @@
 package com.toychain.toychain.controller;
 
 
+import com.toychain.toychain.exceptions.SeedingFailedException;
 import com.toychain.toychain.model.Block;
 import com.toychain.toychain.service.MinerService;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Date;
-import java.util.List;
 
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.mockito.BDDMockito.given;
@@ -39,18 +39,34 @@ public class MinerControllerTest {
 
 
     @Test
-    public void wilLGetAllSports() throws Exception {
+    public void willGetLatestBlock() throws Exception {
         Block result = new Block("ABC111", "CBA321", new Date());
 
-        given(minerService.getLastBlock()).
-                willReturn(result);
+        given(minerService.getLastBlock()).willReturn(result);
 
-        MockHttpServletResponse res = mvc.perform(
-                        get("/latestBlock").contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
+        MockHttpServletResponse res = mvc.perform(get("/latestBlock").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
 
         then(res.getStatus()).isEqualTo(HttpStatus.OK.value());
-        then(res.getContentAsString()).isEqualTo(jsonData.write(result).getJson());
+
+    }
+
+    @Test
+    public void wontSeedTheChain() throws Exception {
+        given(minerService.seedChain()).willThrow(new SeedingFailedException());
+
+        MockHttpServletResponse res = mvc.perform(get("/seedChain").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+    }
+
+    @Test
+    public void willSeedTheChain() throws Exception {
+        given(minerService.seedChain()).willReturn(new Block());
+
+        MockHttpServletResponse res = mvc.perform(get("/seedChain").contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse();
+
+        then(res.getStatus()).isEqualTo(HttpStatus.OK.value());
 
     }
 

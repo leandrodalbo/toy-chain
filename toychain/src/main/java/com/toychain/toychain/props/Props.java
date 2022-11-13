@@ -1,16 +1,17 @@
 package com.toychain.toychain.props;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
+@ConfigurationProperties(prefix = "toychain")
 @Getter
-@AllArgsConstructor
+@Setter
 public class Props {
 
-    @Value("${toyChain.transactionsPerBlock}")
-    private String userBucketPath;
+    private int nonce;
 
-    @Value("${toyChain.proofOfWork}")
-    private String proofOfWork;
+    private int transactions;
 }

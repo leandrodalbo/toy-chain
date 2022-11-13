@@ -1,5 +1,6 @@
 package com.toychain.toychain.controller;
 
+import com.toychain.toychain.exceptions.SeedingFailedException;
 import com.toychain.toychain.model.Block;
 import com.toychain.toychain.service.MinerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,11 @@ public class MinerController {
     @GetMapping("/latestBlock")
     public Block latestBlock() {
         return minerService.getLastBlock();
+    }
+
+    @GetMapping("/seedChain")
+    public void seedChain() throws SeedingFailedException {
+        minerService.seedChain();
     }
 
 }
