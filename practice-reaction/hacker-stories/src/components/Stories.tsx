@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useReducer, useEffect } from "react";
 import Story from "../model-objects/Story";
 
 const localStories: Array<Story> = [
@@ -7,10 +7,40 @@ const localStories: Array<Story> = [
   { id: 3, storyName: "z" },
 ];
 
+type State = {
+  data?: Array<Story>;
+  isLoading: boolean;
+  isError?: boolean;
+};
+
+type Action =
+  | { type: "request" }
+  | { type: "success"; results: Array<Story> }
+  | { type: "failure" };
+
+const storiesReducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "request":
+      return { isLoading: true, isError: false, data: [] };
+    case "success":
+      return { isLoading: false, isError: false, data: action.results };
+    case "failure":
+      return { isLoading: false, isError: true, data: [] };
+
+    default:
+      return state;
+  }
+};
+
 const Stories = () => {
-  const [stories, setStories] = useState(Array<Story>);
-  const [isLoading, setIsLoading] = useState(false);
-  const [fetchError, setFetchError] = useState(false);
+  const [{ data, isLoading, isError }, dispatchStories] = useReducer(
+    storiesReducer,
+    {
+      isError: false,
+      isLoading: false,
+      data: [],
+    }
+  );
 
   const fetchStories = () =>
     new Promise<Story[]>((resolve, reject) =>
@@ -18,26 +48,24 @@ const Stories = () => {
     );
 
   useEffect(() => {
-    setIsLoading(true);
+    dispatchStories({ type: "request" });
     fetchStories()
       .then((it) => {
-        setStories(it);
-        setIsLoading(false);
+        dispatchStories({ type: "success", results: it });
       })
       .catch(() => {
-        setFetchError(true);
-        setIsLoading(false);
+        dispatchStories({ type: "failure" });
       });
   }, []);
 
   return (
     <div>
       <h1>STORIES</h1>
-      {fetchError && <h2>Error Fetching Stories</h2>}
-      {!fetchError && isLoading && <h4>Loading Stories</h4>}
-      {!fetchError && !isLoading && (
+      {isError && <h2>Error Fetching Stories</h2>}
+      {!isError && isLoading && <h4>Loading Stories</h4>}
+      {!isError && !isLoading && (
         <ul>
-          {stories.map((it) => (
+          {data.map((it) => (
             <li>{`${it.id}_${it.storyName}`}</li>
           ))}
         </ul>
