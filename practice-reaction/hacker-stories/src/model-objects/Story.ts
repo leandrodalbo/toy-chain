@@ -1,4 +1,5 @@
 export default interface Story {
-    id: number;
-    storyName: string;
+    title: string;
+    points: number;
+    url: string;
 }

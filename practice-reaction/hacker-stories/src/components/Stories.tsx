@@ -1,11 +1,8 @@
 import { useReducer, useEffect } from "react";
 import Story from "../model-objects/Story";
+import StoriesList from "./StoriesList";
 
-const localStories: Array<Story> = [
-  { id: 1, storyName: "x" },
-  { id: 1, storyName: "y" },
-  { id: 3, storyName: "z" },
-];
+const endpoint = "https://hn.algolia.com/api/v1/search?query=Java";
 
 type State = {
   data?: Array<Story>;
@@ -15,7 +12,7 @@ type State = {
 
 type Action =
   | { type: "request" }
-  | { type: "success"; results: Array<Story> }
+  | { type: "success"; results: any }
   | { type: "failure" };
 
 const storiesReducer = (state: State, action: Action): State => {
@@ -23,7 +20,17 @@ const storiesReducer = (state: State, action: Action): State => {
     case "request":
       return { isLoading: true, isError: false, data: [] };
     case "success":
-      return { isLoading: false, isError: false, data: action.results };
+      return {
+        isLoading: false,
+        isError: false,
+        data: action.results["hits"].map((it: any) => {
+          return {
+            title: it["title"],
+            points: it["points"],
+            url: it["url"],
+          } as Story;
+        }),
+      };
     case "failure":
       return { isLoading: false, isError: true, data: [] };
 
@@ -42,10 +49,11 @@ const Stories = () => {
     }
   );
 
-  const fetchStories = () =>
-    new Promise<Story[]>((resolve, reject) =>
-      setTimeout(() => resolve(localStories), 2000)
-    );
+  const fetchStories = async () => {
+    const response = await fetch(endpoint);
+    const data = response.json();
+    return data;
+  };
 
   useEffect(() => {
     dispatchStories({ type: "request" });
@@ -63,13 +71,7 @@ const Stories = () => {
       <h1>STORIES</h1>
       {isError && <h2>Error Fetching Stories</h2>}
       {!isError && isLoading && <h4>Loading Stories</h4>}
-      {!isError && !isLoading && (
-        <ul>
-          {data.map((it) => (
-            <li>{`${it.id}_${it.storyName}`}</li>
-          ))}
-        </ul>
-      )}
+      {!isError && !isLoading && <StoriesList values={data || []} />}
     </div>
   );
 };
