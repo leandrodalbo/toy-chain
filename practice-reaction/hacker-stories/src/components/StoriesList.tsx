@@ -18,12 +18,10 @@ const StoriesList = ({ values }: StoriesListProps) => {
         </thead>
         <tbody>
           {values.map((it) => (
-            <tr>
+            <tr key={it.title + it.url + it.points}>
               <td>{it.title}</td>
               <td>
-                <a href={it.url}>
-                {it.url}
-                </a>
+                <a href={it.url}>{it.url}</a>
               </td>
               <td>{it.points}</td>
             </tr>
