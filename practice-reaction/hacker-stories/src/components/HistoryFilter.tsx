@@ -11,30 +11,36 @@ const HistoryFilter = (props: HistoryFilterProps) => {
 
   const otherFilterValues = ["none", "even", "odd"];
   return (
-    <>
-      <label htmlFor="valueFilter">ValueFilter: </label>
-      <span>
-        <input
-          id="valueFilter"
-          value={inputFilterValue}
-          type="number"
-          onChange={onFilterChange}
-        />
-      </span>
-      <label htmlFor="dropDownFilters">Others:</label>
-      <select
-        id="dropDownFilters"
-        name="historyDropDownFilter"
-        value={otherFilter}
-        onChange={onOtherFilterChange}
-      >
-        {otherFilterValues.map((it) => (
-          <option key={it} value={it}>
-            {it}
-          </option>
-        ))}
-      </select>
-    </>
+    <div className="mb-2">
+      <ul className="flex">
+        <li className="mr-1">
+          <label htmlFor="valueFilter">ValueFilter: </label>
+          <span>
+            <input
+              id="valueFilter"
+              value={inputFilterValue}
+              type="number"
+              onChange={onFilterChange}
+            />
+          </span>
+        </li>
+        <li className="mr-1">
+          <label htmlFor="dropDownFilters">Others:</label>
+          <select
+            id="dropDownFilters"
+            name="historyDropDownFilter"
+            value={otherFilter}
+            onChange={onOtherFilterChange}
+          >
+            {otherFilterValues.map((it) => (
+              <option key={it} value={it}>
+                {it}
+              </option>
+            ))}
+          </select>
+        </li>
+      </ul>
+    </div>
   );
 };
 

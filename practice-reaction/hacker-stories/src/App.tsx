@@ -3,11 +3,10 @@ import Stories from "./components/Stories";
 
 const App = () => {
   return (
-    <>
+    <div>
       <EvenAndOdd />
-      <hr />
       <Stories />
-    </>
+    </div>
   );
 };
 

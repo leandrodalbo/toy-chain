@@ -25,11 +25,18 @@ const EvenAndOdd = () => {
   };
 
   return (
-    <div>
-      <h1>EVEN AND ODD</h1>
-      <InputsComponents inputValue={value} onChangeHandler={onChangeHandler} />
-      <hr />
-      <EvenOddList values={history} valueRemover={deleteHistoryItem} />
+    <div className="p-8 bg-amber-300">
+      <ul className="flex">
+        <li className="mr-1">
+          <InputsComponents
+            inputValue={value}
+            onChangeHandler={onChangeHandler}
+          />
+        </li>
+        <li className="mr-1">
+          <EvenOddList values={history} valueRemover={deleteHistoryItem} />
+        </li>
+      </ul>
     </div>
   );
 };

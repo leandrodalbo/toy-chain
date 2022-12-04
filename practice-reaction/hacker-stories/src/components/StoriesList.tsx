@@ -6,24 +6,43 @@ interface StoriesListProps {
 
 const StoriesList = ({ values }: StoriesListProps) => {
   return (
-    <div>
+    <div className="overflow-hidden border rounded-lg">
       <hr />
-      <table style={{ textAlign: "center" }}>
-        <thead>
+      <table className="min-w-full divide-y divide-black-100">
+        <thead className="bg-gray-100">
           <tr>
-            <th>TITLE</th>
-            <th>URL</th>
-            <th>POINTS</th>
+            <th
+              scope="col"
+              className="px-2 py-1 text-xs font-bold text-left text-gray-500 uppercase "
+            >
+              TITLE
+            </th>
+            <th
+              scope="col"
+              className="px-2 py-1 text-xs font-bold text-left text-gray-500 uppercase "
+            >
+              POINTS
+            </th>
+            <th
+              scope="col"
+              className="px-2 py-1 text-xs font-bold text-left text-gray-500 uppercase "
+            >
+              URL
+            </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-gray-200">
           {values.map((it) => (
             <tr key={it.title + it.url + it.points}>
-              <td>{it.title}</td>
-              <td>
-                <a href={it.url}>{it.url}</a>
+              <td className="px-2 py-1 text-sm font-medium text-gray-800 whitespace-nowrap">
+                {it.title}
               </td>
-              <td>{it.points}</td>
+              <td className="px-2 py-1 text-sm font-medium text-gray-800 whitespace-nowrap">
+                {it.points}
+              </td>
+              <td className="px-2 py-1 text-sm font-medium text-gray-800 whitespace-nowrap">
+                {it.url}
+              </td>
             </tr>
           ))}
         </tbody>

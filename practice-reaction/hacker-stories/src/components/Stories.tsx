@@ -102,8 +102,7 @@ const Stories = () => {
   };
 
   return (
-    <div>
-      <h1>STORIES</h1>{" "}
+    <div className="p-8 bg-amber-100">
       <span>
         <StoriesSearchFilter
           onFilterChange={onSelectedSearchChange}
