@@ -55,7 +55,11 @@ const Chain = () => {
         <h2>
           No Chain available:
           <span>
-            <button className="btn btn-primary" onClick={() => seedChain()}>
+            <button
+              data-testid="SeedingButton"
+              className="btn btn-primary"
+              onClick={() => seedChain()}
+            >
               Seed Chain
             </button>
           </span>
