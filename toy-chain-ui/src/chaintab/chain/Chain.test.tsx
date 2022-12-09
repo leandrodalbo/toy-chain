@@ -1,8 +1,7 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import Chain from "./Chain";
 import { Block } from "../../model/Block";
-import { ENDPOINT } from "../../api/api";
 import { act } from "react-dom/test-utils";
 
 const block: Block = {
