@@ -71,6 +71,8 @@ public class MinerService {
             throw new BlockGenerationException();
         }
 
+        nextBlockTransactions.removeAllPendingTransactions();
+
         do {
 
             String hashInput = latestBlock.getHash() +
@@ -88,7 +90,6 @@ public class MinerService {
         b.setHash(generatedBlocKHash);
 
         transactionsRepository.saveAll(transactions.stream().map(it -> new Transaction(it.getHash(), generatedBlocKHash, it.getSender(), it.getReceiver(), it.getAmount(), null)).collect(Collectors.toList()));
-        nextBlockTransactions.removeAllPendingTransactions();
         return blocksRepository.save(b);
     }
 

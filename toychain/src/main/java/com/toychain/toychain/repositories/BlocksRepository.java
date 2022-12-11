@@ -7,6 +7,6 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface BlocksRepository extends CrudRepository<Block, String> {
 
-    @Query(value = "select * from blocks order by timestamp desc limit 1", nativeQuery = true)
+    @Query(value = "select * from blocks where timestamp = (select max(timestamp) from blocks) limit 1", nativeQuery = true)
     Block latestBlock();
 }
