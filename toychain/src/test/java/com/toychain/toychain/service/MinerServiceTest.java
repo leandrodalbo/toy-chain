@@ -262,12 +262,14 @@ public class MinerServiceTest {
     public void willReturnAllTheBlocks() {
 
         when(blocksRepository.findAll()).thenReturn(List.of(new Block()));
+        when(transactionsRepository.transactionsByBlock(any())).thenReturn(List.of(new Transaction()));
 
         List<Block> allBlocks = minerService.allBlocks();
 
         assertThat(allBlocks.size()).isGreaterThan(0);
 
         verify(blocksRepository, times(1)).findAll();
+        verify(transactionsRepository, times(1)).transactionsByBlock(any());
     }
 
 

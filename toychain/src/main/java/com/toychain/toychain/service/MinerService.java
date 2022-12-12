@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -62,21 +64,20 @@ public class MinerService {
     @Transactional
     public Block generateBlock() throws BlockGenerationException {
 
-        List<Transaction> transactions = nextBlockTransactions.allTransactions();
+        List<Transaction> pendingTransactions = new ArrayList<>(nextBlockTransactions.allTransactions());
+        nextBlockTransactions.removeAllPendingTransactions();
         Block latestBlock = blocksRepository.latestBlock();
         Optional<String> newBlockHash;
         int nonce = 0;
 
-        if (transactions.size() == 0 || latestBlock == null) {
+        if (pendingTransactions.size() == 0 || latestBlock == null) {
             throw new BlockGenerationException();
         }
-
-        nextBlockTransactions.removeAllPendingTransactions();
 
         do {
 
             String hashInput = latestBlock.getHash() +
-                    transactions.stream().map(Transaction::getHash).collect(Collectors.joining()) +
+                    pendingTransactions.stream().map(Transaction::getHash).collect(Collectors.joining()) +
                     ZonedDateTime.now().toInstant().toEpochMilli() + nonce;
             newBlockHash = hashingComponent.generateHash(hashInput);
 
@@ -89,7 +90,9 @@ public class MinerService {
         b.setPreviousHash(latestBlock.getHash());
         b.setHash(generatedBlocKHash);
 
-        transactionsRepository.saveAll(transactions.stream().map(it -> new Transaction(it.getHash(), generatedBlocKHash, it.getSender(), it.getReceiver(), it.getAmount(), null)).collect(Collectors.toList()));
+        transactionsRepository.saveAll(pendingTransactions.stream().map(it -> new Transaction(it.getHash(), generatedBlocKHash, it.getSender(), it.getReceiver(), it.getAmount(), null))
+                .collect(Collectors.toList()));
+
         return blocksRepository.save(b);
     }
 
@@ -118,7 +121,12 @@ public class MinerService {
     }
 
     public List<Block> allBlocks() {
-        return (List<Block>) blocksRepository.findAll();
+        List<Block> blocks = (List<Block>) blocksRepository.findAll();
+
+        return blocks.stream().map((Block block) -> {
+            List<Transaction> transactions = transactionsRepository.transactionsByBlock(block.getHash());
+            return new Block(block.getHash(), block.getPreviousHash(), block.getTimestamp(), transactions);
+        }).collect(Collectors.toList());
     }
 
     public List<Transaction> allSavedTransactions() {

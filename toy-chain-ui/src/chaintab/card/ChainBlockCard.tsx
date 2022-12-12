@@ -1,25 +1,46 @@
 import React from "react";
-import { Card } from "react-bootstrap";
+import { Card, Popover, OverlayTrigger, Button } from "react-bootstrap";
 import { Block } from "../../model/Block";
+import { Transaction } from "../../model/Transaction";
+import TransactionsList from "../../transactions-list/TransactionsList";
 
 interface BlockCardProps {
   block: Block;
 }
 
 const BlockCard = ({ block }: BlockCardProps) => {
+  const transactionsPopover = (transactions: Transaction[]) => {
+    return (
+      <Popover id="popover-transactions" title="Block Transactions">
+        <TransactionsList transactionsList={transactions} />
+      </Popover>
+    );
+  };
+
   return (
     <Card>
       <Card.Header>
         hash: <span>{block.hash}</span>
       </Card.Header>
-      <Card.Body>
-        <Card.Text>
-          timeStamp: <span>{block.timestamp}</span>
-        </Card.Text>
+      <Card.Body className="row p-3 m-5">
+        <div className="col-auto">
+          <Card.Text>
+            timeStamp: <span>{block.timestamp}</span>
+          </Card.Text>
 
-        <Card.Text>
-          lastBlock: <span>{block.previousHash}</span>
-        </Card.Text>
+          <Card.Text>
+            lastBlock: <span>{block.previousHash}</span>
+          </Card.Text>
+        </div>
+        <div className="col-auto m-3 p-3">
+          <OverlayTrigger
+            trigger={["hover", "focus"]}
+            placement="top"
+            overlay={transactionsPopover(block.transactions || [])}
+          >
+            <Button data-testid="transactions-button">Transactions</Button>
+          </OverlayTrigger>
+        </div>
       </Card.Body>
       <Card.Footer>
         <svg

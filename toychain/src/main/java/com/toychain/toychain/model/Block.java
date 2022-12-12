@@ -6,9 +6,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Column;
+import javax.persistence.Transient;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -30,4 +33,14 @@ public class Block {
     @Column(name = "timestamp", nullable = false, updatable = false)
     @CreationTimestamp
     private Date timestamp;
+
+
+    @Transient
+    private List<Transaction> transactions;
+
+    public Block(String hash, String previousHash, Date timestamp) {
+        this.hash = hash;
+        this.previousHash = previousHash;
+        this.timestamp = timestamp;
+    }
 }
